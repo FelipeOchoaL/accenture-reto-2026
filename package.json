@@ -1,0 +1,11 @@
+{
+  "name": "accenture-reto-2026",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "extract:data": "node scripts/extract-documentation.mjs"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}
