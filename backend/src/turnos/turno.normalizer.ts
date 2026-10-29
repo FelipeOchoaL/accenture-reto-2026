@@ -28,7 +28,12 @@ function prioridadParaConservar(a: Item, b: Item): number {
   return porLlegada !== 0 ? porLlegada : a.indice - b.indice;
 }
 
-function resolverNumerosDuplicados(items: Item[], advertencias: string[]): void {
+/**
+ * Un número repetido no se reasigna cuando uno está pendiente (o atendido) y otro cancelado:
+ * se queda el activo con su número y el cancelado no se carga.
+ * Solo se reasigna si el repetido también está activo, para no dejar dos turnos con el mismo número.
+ */
+function resolverNumerosDuplicados(items: Item[], advertencias: string[]): Item[] {
   const grupos = new Map<number, Item[]>();
   for (const item of items) {
     const grupo = grupos.get(item.turno.numero) ?? [];
@@ -36,17 +41,37 @@ function resolverNumerosDuplicados(items: Item[], advertencias: string[]): void 
     grupos.set(item.turno.numero, grupo);
   }
 
+  const conservados: Item[] = [];
   const sobrantes: Item[] = [];
+
   for (const grupo of grupos.values()) {
-    if (grupo.length < 2) continue;
+    if (grupo.length < 2) {
+      conservados.push(grupo[0]);
+      continue;
+    }
+
     grupo.sort(prioridadParaConservar);
-    sobrantes.push(...grupo.slice(1)); // el primero conserva el número
+    const [primero, ...resto] = grupo;
+    conservados.push(primero);
+
+    for (const item of resto) {
+      const elNumeroYaTieneTurnoActivo = primero.turno.estado !== 'cancelado';
+      if (elNumeroYaTieneTurnoActivo && item.turno.estado === 'cancelado') {
+        advertencias.push(
+          `Número ${item.turno.numero} repetido: se deja el turno ${primero.turno.estado} ` +
+            `de las ${primero.turno.hora_solicitud} y no se carga el cancelado de las ${item.turno.hora_solicitud}. ` +
+            `No se le asigna otro número.`,
+        );
+        continue;
+      }
+      sobrantes.push(item);
+    }
   }
 
-  // Se reasignan en orden de llegada para que el resultado sea determinista.
   sobrantes.sort((a, b) => compararPorLlegada(a.turno, b.turno) || a.indice - b.indice);
 
-  let maximo = items.reduce((m, i) => Math.max(m, i.turno.numero), 0);
+  const todos = [...conservados, ...sobrantes];
+  let maximo = todos.reduce((m, i) => Math.max(m, i.turno.numero), 0);
   for (const item of sobrantes) {
     const original = item.turno.numero;
     maximo += 1;
@@ -57,6 +82,8 @@ function resolverNumerosDuplicados(items: Item[], advertencias: string[]): void 
         `(${item.turno.estado}) pasó a ser el ${maximo}.`,
     );
   }
+
+  return todos;
 }
 
 function detectarSaltosDeFila(turnos: Turno[], advertencias: string[]): void {
@@ -85,9 +112,9 @@ export function prepararTurnos(registros: readonly unknown[]): ResultadoCarga {
     else rechazados.push({ indice, registro: raw, errores: resultado.errores });
   });
 
-  resolverNumerosDuplicados(items, advertencias);
+  const itemsUnicos = resolverNumerosDuplicados(items, advertencias);
 
-  const turnos = items.map((i) => i.turno).sort(compararPorLlegada);
+  const turnos = itemsUnicos.map((i) => i.turno).sort(compararPorLlegada);
   detectarSaltosDeFila(turnos, advertencias);
 
   return { turnos, rechazados, advertencias };

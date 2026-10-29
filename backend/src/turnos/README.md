@@ -9,7 +9,7 @@ TypeScript puro, sin dependencias (no usa NestJS). El back lo envuelve en un `@I
 | `tiempo.util.ts` | Hora <-> segundos, formato `HH:MM:SS` |
 | `turno.orden.ts` | **La** definición de orden de llegada (FIFO) |
 | `turno.validator.ts` | Valida un registro; `hora_atencion` puede ser `null` |
-| `turno.normalizer.ts` | Valida todo, arregla números repetidos y ordena |
+| `turno.normalizer.ts` | Valida todo, descarta un cancelado si el número ya está pendiente y ordena |
 | `turno.estadisticas.ts` | Espera promedio y conteos |
 | `cola-turnos.ts` | La fila: solicitar, llamar al siguiente, cancelar, posición |
 | `turno.loader.ts` | Lee `data/documentation.json` |
@@ -31,7 +31,7 @@ turno.validator.ts: valida un registro y no lanza excepciones, devuelve la lista
 hora_atencion puede ser null, undefined o vacía.
 Un atendido sin hora_atencion se rechaza, porque no se podría calcular la espera.
 Un pendiente o cancelado con hora_atencion se acepta, pero esa hora se ignora y queda una advertencia.
-turno.normalizer.ts: valida todos los registros, arregla los números repetidos y ordena. Un registro malo va a rechazados y no tumba la carga.
+turno.normalizer.ts: valida todos los registros y ordena. Si el mismo número está pendiente y cancelado, se queda el pendiente y el cancelado no se carga ni recibe otro número. Un registro malo va a rechazados y no tumba la carga.
 turno.orden.ts: es la única definición de FIFO del proyecto (hora de llegada y luego número). Se ordena por hora, no por número ni por posición en el archivo, porque el turno 9 aparece antes que el 7 y el 8.
 cola-turnos.ts: la fila. Tiene solicitarTurno, llamarSiguiente, cancelarTurno, posicionEnFila y estadisticas, y garantiza las tres reglas del caso. Un número nunca se reutiliza, ni siquiera el de un cancelado.
 turno.errors.ts: errores con un codigo estable (COLA_VACIA, etc.) para que el controlador los traduzca a 409, 404 o 400.

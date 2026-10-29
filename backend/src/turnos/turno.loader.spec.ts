@@ -19,14 +19,21 @@ describe('extraerRegistros', () => {
 describe('carga real de data/documentation.json', () => {
   const carga = cargarTurnosDesdeArchivo();
 
-  it('carga los 11 registros sin rechazar ninguno', () => {
-    expect(carga.turnos).toHaveLength(11);
+  it('carga 10 turnos: el 7 pendiente se queda y el cancelado repetido no se carga', () => {
+    expect(carga.turnos).toHaveLength(10);
     expect(carga.rechazados).toHaveLength(0);
+    expect(carga.turnos.find((t) => t.numero === 7)).toMatchObject({
+      estado: 'pendiente',
+      hora_solicitud: '08:34:00',
+    });
+    expect(carga.turnos.some((t) => t.estado === 'cancelado' || t.numero_original != null)).toBe(false);
+    expect(carga.advertencias.some((a) => a.includes('Número 7 repetido'))).toBe(true);
   });
 
-  it('resuelve el número 7 repetido: ya no hay números duplicados', () => {
-    expect(new Set(carga.turnos.map((t) => t.numero)).size).toBe(11);
-    expect(carga.turnos.filter((t) => t.numero_original === 7)).toHaveLength(1);
+  it('resuelve el número 7 repetido sin inventar un número nuevo', () => {
+    const numeros = carga.turnos.map((t) => t.numero);
+    expect(new Set(numeros).size).toBe(numeros.length);
+    expect(numeros).not.toContain(11);
   });
 
   it('la fila queda en orden de llegada: 6, 7, 8, 9, 10', () => {
@@ -38,10 +45,10 @@ describe('carga real de data/documentation.json', () => {
     expect(e.esperaPromedioMinutos).toBe(12.2);
     expect(e.enEspera).toBe(5);
     expect(e.atendidos).toBe(5);
-    expect(e.cancelados).toBe(1);
+    expect(e.cancelados).toBe(0);
   });
 
-  it('el siguiente número libre es el 12 (el 11 lo tomó el cancelado reasignado)', () => {
-    expect(new ColaTurnos(carga.turnos).solicitarTurno('15:00:00').numero).toBe(12);
+  it('el siguiente número libre es el 11, porque el máximo que quedó es el 10', () => {
+    expect(new ColaTurnos(carga.turnos).solicitarTurno('15:00:00').numero).toBe(11);
   });
 });

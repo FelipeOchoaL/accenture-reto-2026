@@ -13,18 +13,29 @@ describe('prepararTurnos', () => {
     expect(turnos.map((x) => x.numero)).toEqual([7, 9]);
   });
 
-  it('el turno activo conserva el número y el cancelado repetido recibe uno nuevo', () => {
+  it('si hay un pendiente y un cancelado con el mismo número, el pendiente se queda y el cancelado no se reasigna', () => {
     const { turnos, advertencias } = prepararTurnos([
       t(7, '08:30:00', 'cancelado'),
       t(7, '08:34:00', 'pendiente'),
       t(10, '08:45:00', 'pendiente'),
     ]);
-    const activo = turnos.find((x) => x.estado === 'pendiente' && x.hora_solicitud === '08:34:00');
-    const cancelado = turnos.find((x) => x.estado === 'cancelado');
-    expect(activo?.numero).toBe(7);
-    expect(cancelado?.numero).toBe(11);
-    expect(cancelado?.numero_original).toBe(7);
-    expect(advertencias.length).toBeGreaterThan(0);
+    expect(turnos.map((x) => x.numero).sort((a, b) => a - b)).toEqual([7, 10]);
+    expect(turnos.find((x) => x.numero === 7)).toMatchObject({
+      estado: 'pendiente',
+      hora_solicitud: '08:34:00',
+    });
+    expect(turnos.some((x) => x.estado === 'cancelado' || x.numero === 11)).toBe(false);
+    expect(advertencias.some((a) => a.includes('No se le asigna otro número'))).toBe(true);
+  });
+
+  it('el orden del archivo no cambia quién conserva el número', () => {
+    const { turnos } = prepararTurnos([
+      t(7, '08:34:00', 'pendiente'),
+      t(7, '08:30:00', 'cancelado'),
+    ]);
+    expect(turnos).toEqual([
+      expect.objectContaining({ numero: 7, estado: 'pendiente', hora_solicitud: '08:34:00' }),
+    ]);
   });
 
   it('entre dos activos repetidos conserva el que llegó primero', () => {
