@@ -1,0 +1,98 @@
+{
+  "extractedAt": "2026-10-29T20:55:21.019Z",
+  "sourceDirectory": "documentation",
+  "summary": {
+    "files": 1,
+    "sheets": 1,
+    "records": 11,
+    "byStatus": {
+      "atendido": 5,
+      "pendiente": 5,
+      "cancelado": 1
+    }
+  },
+  "workbooks": [
+    {
+      "file": "documentation/turnos_hoy.xlsx",
+      "name": "turnos_hoy",
+      "sheets": {
+        "in": {
+          "headers": [
+            "numero",
+            "hora_solicitud",
+            "hora_atencion",
+            "estado"
+          ],
+          "records": [
+            {
+              "numero": 1,
+              "hora_solicitud": "08:02:00",
+              "hora_atencion": "08:05:00",
+              "estado": "atendido"
+            },
+            {
+              "numero": 2,
+              "hora_solicitud": "08:06:00",
+              "hora_atencion": "08:15:00",
+              "estado": "atendido"
+            },
+            {
+              "numero": 3,
+              "hora_solicitud": "08:10:00",
+              "hora_atencion": "08:24:00",
+              "estado": "atendido"
+            },
+            {
+              "numero": 4,
+              "hora_solicitud": "08:15:00",
+              "hora_atencion": "08:31:00",
+              "estado": "atendido"
+            },
+            {
+              "numero": 5,
+              "hora_solicitud": "08:21:00",
+              "hora_atencion": "08:40:00",
+              "estado": "atendido"
+            },
+            {
+              "numero": 6,
+              "hora_solicitud": "08:25:00",
+              "hora_atencion": null,
+              "estado": "pendiente"
+            },
+            {
+              "numero": 9,
+              "hora_solicitud": "08:41:00",
+              "hora_atencion": null,
+              "estado": "pendiente"
+            },
+            {
+              "numero": 7,
+              "hora_solicitud": "08:30:00",
+              "hora_atencion": null,
+              "estado": "cancelado"
+            },
+            {
+              "numero": 7,
+              "hora_solicitud": "08:34:00",
+              "hora_atencion": null,
+              "estado": "pendiente"
+            },
+            {
+              "numero": 8,
+              "hora_solicitud": "08:38:00",
+              "hora_atencion": null,
+              "estado": "pendiente"
+            },
+            {
+              "numero": 10,
+              "hora_solicitud": "08:45:00",
+              "hora_atencion": null,
+              "estado": "pendiente"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
